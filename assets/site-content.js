@@ -19,6 +19,7 @@
         if (h.textContent !== 'Features') h.textContent = 'Features';
       });
     }
+    main.querySelectorAll('a[href="mailto:dummy@mail.com"]').forEach(link => { link.href = 'mailto:partners@scuff.cat'; });
     main.querySelectorAll('img').forEach(image => {
       const source = image.getAttribute('src') || '';
       const base = source.split('?')[0];
@@ -40,17 +41,27 @@
   new MutationObserver(() => {
     if (!pending) { pending = true; requestAnimationFrame(update); }
   }).observe(document.getElementById('main') || document.body, {childList:true,subtree:true,characterData:true,attributes:true,attributeFilter:['src','srcset']});
-  // Use the self-hosted HTML pages instead of Framer's original route content.
-  document.addEventListener('click', event => {
-    const link = event.target.closest('a[href]');
+  // Contact uses its corrected standalone page; other routes keep Framer transitions.
+  document.addEventListener("click", event => {
+    const link = event.target.closest("a[href]");
     if (!link || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
     const target = new URL(link.href, location.href);
-    if (target.origin !== location.origin || target.pathname === location.pathname) return;
-    if (/^\/(?:index|work|contact|work\/(?:ticketing|streetpass|surge))$/.test(target.pathname)) {
-      target.pathname += '.html';
+    if (target.origin === location.origin && /^\/contact(?:\.html)?$/.test(target.pathname)) {
+      target.pathname = "/contact.html";
       link.href = target.href;
+      event.stopImmediatePropagation();
     }
-    event.stopImmediatePropagation();
   }, true);
+  const headingStyle = document.createElement("style");
+  headingStyle.textContent = ".framer-10b714a h1.framer-text {font-size:clamp(44px,7.5vw,140px)!important;line-height:1.04!important;white-space:normal;overflow-wrap:normal;}";
+  document.head.appendChild(headingStyle);
+  const restoreTitle = () => {
+    const path = location.pathname.replace(/\.html$/, "");
+    const titles = {"/work/ticketing":"SCUFFPay // SCUFF Partners", "/work/streetpass":"StreetPass // SCUFF Partners", "/work/surge":"Surge Pricing // SCUFF Partners"};
+    const title = titles[path] || "SCUFF // Partners";
+    if (document.title !== title) document.title = title;
+  };
+  new MutationObserver(restoreTitle).observe(document.head, {childList:true,characterData:true,subtree:true});
+  restoreTitle();
   update();
 })();
