@@ -13,6 +13,10 @@
       main.querySelectorAll(removed.map(c => '.' + c).join(',')).forEach(el => el.remove());
       const pricing = main.querySelector('[data-framer-name="Pricing"]');
       if (pricing && !main.querySelector('#venue-onboarding')) pricing.insertAdjacentHTML('beforebegin', onboarding);
+      const onboardingCopy = main.querySelector('#venue-onboarding .site-onboarding-grid > div');
+      if (onboardingCopy && !onboardingCopy.querySelector('[data-organisers-link]')) {
+        onboardingCopy.insertAdjacentHTML('beforeend', '<p style="margin-top:24px;margin-bottom:0"><a data-organisers-link href="/organisers.html">For organisers</a></p>');
+      }
     }
     if (/\/work(?:\.html)?$/.test(location.pathname)) {
       main.querySelectorAll('h1').forEach(h => {
@@ -41,13 +45,13 @@
   new MutationObserver(() => {
     if (!pending) { pending = true; requestAnimationFrame(update); }
   }).observe(document.getElementById('main') || document.body, {childList:true,subtree:true,characterData:true,attributes:true,attributeFilter:['src','srcset']});
-  // Contact uses its corrected standalone page; other routes keep Framer transitions.
+  // Standalone pages use full navigation; other routes keep Framer transitions.
   document.addEventListener("click", event => {
     const link = event.target.closest("a[href]");
     if (!link || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
     const target = new URL(link.href, location.href);
-    if (target.origin === location.origin && /^\/contact(?:\.html)?$/.test(target.pathname)) {
-      target.pathname = "/contact.html";
+    if (target.origin === location.origin && /^\/(?:contact|organisers)(?:\.html)?$/.test(target.pathname)) {
+      target.pathname = target.pathname.replace(/(?:\.html)?$/, ".html");
       link.href = target.href;
       event.stopImmediatePropagation();
     }
